@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SCOREBOARD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="CricScoreLog.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Norwester';
+            src: url('norwester.otf') format('opentype');
+        }
+
+        body {
+            font-family: 'Norwester', sans-serif;
+            background-color: rgba(12, 47, 78, 0.95);
+            color: rgba(255, 255, 255, 0.85);
+            font-size: xx-large;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .main-container {
+            margin-top: 40px;
+            /* margin from top */
+        }
+
+        .innings-block {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            background-color: #0c2f4e;
+        }
+
+        .header {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.7);
+            padding-left: 20px;
+            padding-right: 20px;
+            border-radius: 8px 8px 0 0;
+            background-color: #0c2f4e;
+        }
+
+        .score-summary {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.7);
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-bottom: 10px;
+            border-radius: 0 0 8px 8px;
+            background-color: #0c2f4e;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 35px;
+        }
+
+        input[type="button"],
+        input[type="number"] {
+            font-family: 'Norwester', sans-serif;
+            font-size: large;
+            padding: 10px 15px;
+            margin: 3px;
+            border: none;
+            border-radius: 8px;
+            background-color: rgba(93, 138, 244, 0.7);
+            color: #fff;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        input[type="button"]:hover {
+            background-color: rgba(93, 138, 244, 1);
+        }
+
+        input[type="number"] {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        .innings-block {
+            width: 50%;
+        }
+
+        .glow-button {
+            background-color: rgba(39, 66, 128, 0.7);
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .glow-button:hover {
+            background-color: rgb(60, 85, 142);
+            box-shadow: 0 0 10px rgba(93, 138, 244, 0.7),
+                0 0 20px rgba(93, 138, 244, 0.5);
+        }
+    </style>
+</head>
+
+<body ng-app="scoreboard" ng-controller="DaysCricsysCtrl">
+    <div class="main-container">
+
+
+        <div class="header">
+            <p><b>{{Team_a}} vs {{Team_b}}</b>
+                <span style="float: right;">DAY{{Crr_Day}}<span ng-show="Day_stumps">,<br>Stumps</span></span>
+            </p>
+            <p>{{Innings}} <span>{{ (i < 2) ? '1st' : (i> 1 && i < 4 ) ? '2nd' : '' }}</span> Innings</p>
+        </div>
+
+        <div class="score-summary flex-row">
+            <div>
+                <p>
+                    TOTAL : {{runs}}<span>{{ (wkt==max_wkt) ? '' : '/'+wkt}}</span><br>
+                    OVERS : {{Overs}}<br>
+                    CRR : {{crr}}<br>
+                    Extras : {{EXTRAS}}
+                </p>
+            </div>
+            <div style="text-align:center;">
+                <p>
+                    <span ng-if="strikerId">
+                        {{ getBatsmanById(strikerId).name || '-' }} {{ getBatsmanById(strikerId).runs || 0 }}({{
+                        getBatsmanById(strikerId).balls || 0 }})
+                    </span><br>
+                    <span ng-if="nonStrikerId">
+                        {{ getBatsmanById(nonStrikerId).name || '-' }} {{ getBatsmanById(nonStrikerId).runs || 0 }}({{
+                        getBatsmanById(nonStrikerId).balls || 0 }})
+                    </span><br>
+                    <span ng-if="i == 1">{{ (Ist_inn_score_diff > 0) ? 'Lead By '+Ist_inn_score_diff :
+                        (Ist_inn_score_diff < 0) ? 'Trail By ' +(0-(Ist_inn_score_diff)) : 'Scores Level' }}</span>
+                            <span ng-if="i == 2">{{ (IInd_inn_score_diff > 0) ? 'Lead By '+IInd_inn_score_diff :
+                                (IInd_inn_score_diff < 0) ? 'Trail By ' +(0-(IInd_inn_score_diff)) : 'Scores Level'
+                                    }}</span>
+                                    <span ng-if="i == 3">TARGET {{Target}}</span>
+                </p>
+            </div>
+            <div style="text-align:center;">
+                <p>
+                    <span ng-if="bowlerId">
+                        {{ getBowlerById(bowlerId).name || '-' }} {{ getBowlerById(bowlerId).wickets || 0 }} - {{
+                        getBowlerById(bowlerId).runsConceded || 0 }} ({{ getBowlerById(bowlerId).overs || 0 }}.{{
+                        getBowlerById(bowlerId).balls || 0 }}) ov
+                    </span><br>
+                    This over<br>
+                    4s :{{Fours}} 6s :{{Six}}
+                </p>
+            </div>
+        </div>
+        <div class="score-summary flex-row" style="padding: 10px; margin-bottom: 0; margin-top: -10px;">
+            <div style="margin-bottom:10px;">
+                <label>striker:</label>
+                <select ng-model="strikerId"
+                    ng-options="p.id as p.name for p in (Innings === Team_a ? Team_a_lineups : Team_b_lineups)">
+                    <option value="">select striker</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px;">
+                <label>non-striker:</label>
+                <select ng-model="nonStrikerId"
+                    ng-options="p.id as p.name for p in (Innings === Team_a ? Team_a_lineups : Team_b_lineups)">
+                    <option value="">select non-striker</option>
+                </select>
+            </div>
+            <div style="margin-bottom:10px;">
+                <label>bowler:</label>
+                <select ng-model="bowlerId"
+                    ng-options="p.id as p.name for p in (Innings === Team_a ? Team_b_lineups : Team_a_lineups)">
+                    <option value="">select bowler</option>
+                </select>
+            </div>
+            <input type="button" class="glow-button" value="Set Players"
+                ng-click="selectPlayers(strikerId, nonStrikerId, bowlerId)">
+        </div>
+        <div class="buttons-row flex-row">
+            <div style="text-align:center;">
+                RBW<br>
+                <input type="button" value="0" ng-click="dot()">
+                <input type="button" value="1" ng-click="single()">
+                <input type="button" value="2" ng-click="double()">
+                <input type="button" value="3" ng-click="triple()">
+                <input type="button" value="4" ng-click="four()">
+                <input type="button" value="5" ng-click="five()">
+                <input type="button" value="6" ng-click="six()">
+            </div>
+            <div style="text-align:center;">
+                Boundries<br>
+                <input type="button" value="4" ng-click="B_four()">
+                <input type="button" value="6" ng-click="B_six()">
+                <input type="button" value="Nb+4" ng-click="Nb4plus()">
+                <input type="button" value="Nb+6" ng-click="Nb6plus()">
+            </div>
+            <div style="text-align:center;">
+                Extras<br>
+                <input type="number" name="extra" ng-model="extra" min="0" max="10" placeholder="0">
+                <input type="button" value="wd" ng-click="wide()">
+                <input type="button" value="Nb" ng-click="no_ball()">
+                <input type="button" value="Lb" ng-click="leg_bye()"><br>
+                <input type="button" value="B" ng-click="bye()">
+                <input type="button" value="NLb" ng-click="leg_byeOnNB()">
+                <input type="button" value="NBb" ng-click="byeOnNB()">
+                <input type="button" value="P" ng-click="penalty()">
+            </div>
+        </div>
+        <div style="text-align:center;">
+            <input type="button" value="WICKET" ng-click="wicket()"
+                ng-disabled=" wkt === max_wkt || Overs == maxovers"><br>
+
+        <div style="text-align:center;">
+            <span ng-if="!Day_stumps && Crr_Day != max_days+1"><input type="button" value="stumps"
+                    style="background-color: rgb(250, 93, 93);" ng-click="stumps()"></span>
+            <span ng-if="Day_stumps && Crr_Day < max_days"><input type="button" value="start new day"
+                    ng-click="startNewDay()"></span>
+            <span ng-if="i == 1 && (Ist_inn_score_diff < 0) && (wkt === max_wkt || declared)"><input type="button"
+                    value="follow On" ng-click="follow_on()"></span>
+            <input type="button" value="declare" style="background-color: rgb(206, 206, 62);" ng-click="declaration()">
+            <input type="button" value="next innings" ng-click="next_innings()"
+                ng-disabled="!(wkt === max_wkt || declared) || i > 2">
+        </div>
+
+        <div class="flex-row" style="justify-content:center; gap:30px; flex-wrap:wrap;">
+            <!-- Innings blocks -->
+            <div class="innings-block" ng-show="i>=0">
+                <input type="button" style="width:100%;" ng-value="buttonLabel1st()">
+                <h3>{{Ist_inn}} Batting</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>R</th>
+                            <th>B</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                            <th>SR</th>
+                            <th>status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (Ist_inn == Team_a ? Team_a_battingscores_1st : Team_b_battingscores_1st)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.runs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.fours}}</td>
+                            <td>{{player.six}}</td>
+                            <td>{{player.strikeRate}}</td>
+                            <td>
+                                <span ng-if="!player.isOut">Not Out</span>
+                                <span ng-if="player.isOut">{{p.dismissalInfo || 'Out'}}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>{{IInd_inn}} Bowling</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>O</th>
+                            <th>B</th>
+                            <th>R</th>
+                            <th>W</th>
+                            <th>Eco.</th>
+                            <th>extras</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (Ist_inn == Team_a ? Team_b_bowlingscores_1st : Team_a_bowlingscores_1st)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.overs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.runsConceded}}</td>
+                            <td>{{player.wickets}}</td>
+                            <td>{{player.economy}}</td>
+                            <td>{{player.extrasConceded}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div>
+                    TOTAL<span style="float: right;">{{Ist_inn_score.Runs}}<span>{{(Ist_inn_score.WKT == max_wkt) ? '' :
+                            '/'+Ist_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{Ist_inn_score.Overs}}</span>
+                </div>
+            </div>
+            <div class="innings-block" ng-show="i>=1">
+                <input type="button" style="width:100%;" ng-value="buttonLabel2nd()">
+                <h3>{{IInd_inn}} Batting</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>R</th>
+                            <th>B</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                            <th>SR</th>
+                            <th>status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (IInd_inn == Team_a ? Team_a_battingscores_2nd : Team_b_battingscores_2nd)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.runs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.fours}}</td>
+                            <td>{{player.six}}</td>
+                            <td>{{player.strikeRate}}</td>
+                            <td>
+                                <span ng-if="!player.isOut">Not Out</span>
+                                <span ng-if="player.isOut">{{p.dismissalInfo || 'Out'}}</span>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>{{Ist_inn}} Bowling</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>O</th>
+                            <th>B</th>
+                            <th>R</th>
+                            <th>W</th>
+                            <th>Eco.</th>
+                            <th>extras</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (IInd_inn == Team_a ? Team_b_bowlingscores_2nd : Team_a_bowlingscores_2nd)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.overs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.runsConceded}}</td>
+                            <td>{{player.wickets}}</td>
+                            <td>{{player.economy}}</td>
+                            <td>{{player.extrasConceded}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div>
+                    TOTAL<span style="float: right;">{{IInd_inn_score.Runs}}<span>{{(IInd_inn_score.WKT == max_wkt) ? ''
+                            : '/'+IInd_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{IInd_inn_score.Overs}}</span>
+                </div>
+            </div>
+            <div class="innings-block" ng-show="i>=2">
+                <input type="button" style="width:100%;" ng-value="buttonLabel3rd()">
+                <h3>{{IIIrd_inn}} Batting</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>R</th>
+                            <th>B</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                            <th>SR</th>
+                            <th>status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (IIIrd_inn == Team_a ? Team_a_battingscores_3rd : Team_b_battingscores_3rd)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.runs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.fours}}</td>
+                            <td>{{player.six}}</td>
+                            <td>{{player.strikeRate}}</td>
+                            <td>
+                                <span ng-if="!player.isOut">Not Out</span>
+                                <span ng-if="player.isOut">{{p.dismissalInfo || 'Out'}}</span>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>{{IVth_inn}} Bowling</h3>
+                <table border="1">  
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>O</th>
+                            <th>B</th>
+                            <th>R</th>
+                            <th>W</th>
+                            <th>Eco.</th>
+                            <th>extras</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (IIIrd_inn == Team_a ? Team_b_bowlingscores_3rd : Team_a_bowlingscores_3rd)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.overs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.runsConceded}}</td>
+                            <td>{{player.wickets}}</td>
+                            <td>{{player.economy}}</td>
+                            <td>{{player.extrasConceded}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div ng-if="FollowOn==0">
+                    TOTAL<span style="float: right;">{{IIIrd_inn_score.Runs}}<span>{{(IIIrd_inn_score.WKT == max_wkt) ?
+                            '' : '/'+IIIrd_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{IIIrd_inn_score.Overs}}</span>
+                </div>
+                <div ng-if="FollowOn==1">
+                    TOTAL<span style="float: right;">{{IVth_inn_score.Runs}}<span>{{(IVth_inn_score.WKT == max_wkt) ? ''
+                            : '/'+IVth_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{IVth_inn_score.Overs}}</span>
+                </div>
+            </div>
+            <div class="innings-block" ng-show="i==3">
+                <input type="button" style="width:100%;" ng-value="buttonLabel4th()">
+                <h3>{{IVth_inn}} Batting</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>R</th>
+                            <th>B</th>
+                            <th>4s</th>
+                            <th>6s</th>
+                            <th>SR</th>
+                            <th>status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (IVth_inn == Team_a ? Team_a_battingscores_4th : Team_b_battingscores_4th)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.runs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.fours}}</td>
+                            <td>{{player.six}}</td>
+                            <td>{{player.strikeRate}}</td>
+                            <td>
+                                <span ng-if="!player.isOut">Not Out</span>
+                                <span ng-if="player.isOut">{{p.dismissalInfo || 'Out'}}</span>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3>{{IIIrd_inn}} Bowling</h3>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>O</th>
+                            <th>B</th>
+                            <th>R</th>
+                            <th>W</th>
+                            <th>Eco.</th>
+                            <th>extras</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            ng-repeat="player in (IVth_inn == Team_a ? Team_b_bowlingscores_4th : Team_a_bowlingscores_4th)">
+                            <td>{{player.name}}</td>
+                            <td>{{player.overs}}</td>
+                            <td>{{player.balls}}</td>
+                            <td>{{player.runsConceded}}</td>
+                            <td>{{player.wickets}}</td>
+                            <td>{{player.economy}}</td>
+                            <td>{{player.extrasConceded}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div ng-if="FollowOn==0">
+                    TOTAL<span style="float: right;">{{IVth_inn_score.Runs}}<span>{{(IVth_inn_score.WKT == max_wkt) ? ''
+                            : '/'+IVth_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{IVth_inn_score.Overs}}</span>
+                </div>
+                <div ng-if="FollowOn==1">
+                    TOTAL<span style="float: right;">{{IIIrd_inn_score.Runs}}<span>{{(IIIrd_inn_score.WKT == max_wkt) ?
+                            '' : '/'+IIIrd_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{IIIrd_inn_score.Overs}}</span>
+                </div>
+            </div>
+        </div>
+        <div ng-show="result != null">
+            {{result}}
+        </div>
+    </div>
+</body>
+
+</html>

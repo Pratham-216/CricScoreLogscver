@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SCOREBOARD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="CricScoreLog.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Norwester';
+            src: url('norwester.otf') format('opentype');
+        }
+
+        @font-face {
+            font-family: 'bebasneueregular';
+            src: url('bebasneueregular.otf') format('opentype');
+        }
+
+        body {
+            font-family: 'Norwester', sans-serif;
+            font-size: xx-large;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            /* makes width calculations consistent */
+            overflow-x: hidden;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .innings-block {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+
+        }
+
+        .header {
+            width: 100%;
+            background-color: #0c2f4e;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: left;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-left: 20px;
+            font-size: 24px;
+        }
+
+        .score-summary {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 1);
+            padding-left: 5%;
+            padding-right: 5%;
+            padding-top: 2%;
+            padding-bottom: 2%;
+            background-color: #0c2f4e;
+        }
+
+        .flex-row {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        /* Center the player selector block on larger screens and keep it responsive.
+           Use a max-width so it doesn't stretch too wide, and margin:auto to center it. */
+        .playerSelector {
+            max-width: 700px;
+            width: 80%;
+            margin: 0 auto;
+            padding: 12px;
+            border-radius: 8px;
+            /* keep the existing visual cue (border/background handled in media query for small screens) */
+
+        }
+
+        input[type="button"],
+        input[type="number"] {
+            font-family: 'bebasneueregular', sans-serif;
+            font-size: large;
+            padding: 10px 15px;
+            margin: 3px;
+            border: none;
+            background-color: rgba(93, 138, 244, 0.8);
+            color: #fff;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        input[type="button"]:hover {
+            background-color: rgba(93, 138, 244, 1);
+        }
+
+        input[type="number"] {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+        }
+        
+        th,
+        td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        .glow-button {
+            background-color: rgba(39, 66, 128, 0.7);
+            color: #fff;
+            border-radius: 10px;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .glow-button:hover {
+            background-color: rgb(60, 85, 142);
+            box-shadow: 0 0 10px rgba(93, 138, 244, 0.7),
+                0 0 20px rgba(93, 138, 244, 0.5);
+        }
+
+        @media (max-width: 767px) {
+            body {
+                font-size: 20px;
+            }
+
+            .header {
+                font-size: 25px;
+                padding-left: 20px;
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+
+            .main-container {
+                width: 100%;
+                margin-top: 5%;
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .flex-row {
+                flex-direction: column;
+            }
+
+            .score-summary {
+                width: 90%;
+                border-radius: 8px;
+            }
+
+            .parent {
+                display: flex;
+                width: 100%;
+            }
+
+            .left,
+            .right {
+                width: 50%;
+                box-sizing: border-box;
+                padding: 5px;
+                /* ensures padding doesn’t break layout */
+            }
+
+            .playerSelector {
+                width: 90%;
+                text-align: center;
+                padding-left: 5%;
+                padding-right: 5%;
+                color: black;
+            }
+
+            .innings-block {
+                display: block;
+                /* stack vertically */
+                width: 100%;
+                /* take full width */
+                margin: 5px 0;
+                /* top-bottom spacing */
+                background-color: #0c2f4e;
+                color: white;
+            }
+            input[type="number"] {
+            color: rgb(0, 0, 0);
+            /* input text color */
+            border: none;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.5);
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+            padding: 6px;
+
+        }
+        }
+    </style>
+</head>
+
+<body ng-app="scoreboard" ng-controller="LOCricsysCtrl">
+    <div class="header">
+        <p><b>{{Team_a}} vs {{Team_b}}</b>
+        </p>
+    </div>
+
+    <div class="main-container">
+        <!--scorecard block-->
+        <div class="score-summary">
+            <div class="parent">
+                <div class="left">
+                    <span style="color: rgba(255, 255, 255, 0.85);">{{Innings}} <span>{{ (i == 0) ? '1st' : (i> 0) ?
+                            '2nd' : '' }}</span> innings</span><br>
+                    <span style="font-family: 'bebasneueregular';"><span style="font-size: 28px; ">{{runs}}<span>{{
+                                (wkt==max_wkt) ? ''
+                                : '/'+wkt}}</span></span> ({{Overs}})</span>
+                </div>
+                <div class="right" style="text-align: right;">
+                    <span style="float: right; color: rgba(255, 255, 255, 0.85);">crr : <span
+                            style="font-family: 'bebasneueregular';">{{crr}}</span></span><br>
+                    <span ng-if="i === 1">target: <span
+                            style="font-family: 'bebasneueregular';">{{Target}}</span></span>
+                </div>
+            </div>
+            <hr style="border: none; background-color: white; height: 1px;width: 100%;">
+            <div class="parent" ng-if="batting_mode === 'singleBat'">
+                <div class="left">
+                    {{ getBatsmanById(strikerId).name || '-' }}
+                    <span style="float: right; font-family: bebasneueregular; font-size: 22px;">{{
+                        getBatsmanById(strikerId).runs }}({{ getBatsmanById(strikerId).balls
+                        }})</span>
+                </div>
+                <div class="right">
+                    <span style="float: right;">4s: <span style="font-family: 'bebasneueregular'; font-size: 22px;">{{Fours}}</span> 6s: <span style="font-family: 'bebasneueregular'; font-size: 22px;">{{Six}}</span></span>
+                </div>
+            </div>
+            <div class="parent" ng-if="batting_mode === 'duoBat'">
+                <div class="left" style="background-color: steelblue;">
+                    {{ getBatsmanById(strikerId).name || '-' }}
+                    <span style="float: right; font-family: 'bebasneueregular'; font-size: 22px;">{{
+                        getBatsmanById(strikerId).runs }}({{ getBatsmanById(strikerId).balls
+                        }})</span>
+                </div>
+                <div class="right">
+                    {{ getBatsmanById(nonStrikerId).name || '-' }}
+                    <span style="float: right; font-family: 'bebasneueregular'; font-size: 22px;">{{
+                        getBatsmanById(nonStrikerId).runs }}({{
+                        getBatsmanById(nonStrikerId).balls }})</span>
+                </div>
+            </div>
+            <hr style="border: none; background-color: white; height: 1px;width: 100%;">
+            <div class="parent">
+                <div class="left">
+                    {{ getBowlerById(bowlerId).name || '-' }}
+                    <span style="float: right; font-family: 'bebasneueregular'; font-size: 22px;">{{
+                        getBowlerById(bowlerId).wickets }} - {{ getBowlerById(bowlerId).runsConceded }}</span><br>
+                    <span style="color: rgba(255, 255, 255, 0.85);">extras : <span style="font-family: 'bebasneueregular'; font-size: 22px;">{{EXTRAS}}</span></span>
+                </div>
+                <div class="right">
+                    <span style="font-family: 'bebasneueregular'; font-size: 22px;">({{ getBowlerById(bowlerId).overs
+                        }}.{{ getBowlerById(bowlerId).balls }})</span> overs
+                </div>
+            </div>
+        </div>
+
+        <div ng-show="resultgenerated">
+            <h3 style="text-align: center; color: black;">{{result}}</h2>
+        </div>
+
+        <!--navigation block
+        <hr style="border: none; background-color: black; height: 3px;width: 90%;;">
+        <div class="parent" style="width: 90%;">
+            <input type="button" value="CONTROLS" ng-click="getControls()">
+            <input type="button" value="SCOREBOARD" ng-click="getScoreboard()">
+        </div>
+        <hr style="border: none; background-color: black; height: 3px;width: 90%;">
+    -->
+        <!--controlls block-->
+        <div>
+            <!-- Player Selection Block duobatting mode -->
+            <div class="playerSelector flex-row" ng-if="batting_mode === 'duoBat'">
+                <div style="margin-bottom:10px;">
+                    <label>striker:</label>
+                    <select ng-model="strikerId"
+                        ng-options="p.id as p.name for p in (Innings === Team_a ? Team_a_lineups : Team_b_lineups)">
+                        <option value="">select striker</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label>non-striker:</label>
+                    <select ng-model="nonStrikerId"
+                        ng-options="p.id as p.name for p in (Innings === Team_a ? Team_a_lineups : Team_b_lineups)">
+                        <option value="">select non-striker</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label>bowler:</label>
+                    <select ng-model="bowlerId"
+                        ng-options="p.id as p.name for p in (Innings === Team_a ? Team_b_lineups : Team_a_lineups)">
+                        <option value="">select bowler</option>
+                    </select>
+                </div>
+                <input type="button" class="glow-button" value="Set Players"
+                    ng-click="selectPlayersDuo(strikerId, nonStrikerId, bowlerId)">
+            </div>
+
+            <!-- Player Selection Block single batting mode -->
+            <div class="playerSelector flex-row" ng-if="batting_mode === 'singleBat'">
+                <div style="margin-bottom:10px;">
+                    <label>striker:</label>
+                    <select ng-model="strikerId"
+                        ng-options="p.id as p.name for p in (Innings === Team_a ? Team_a_lineups : Team_b_lineups)">
+                        <option value="">select striker</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:10px;">
+                    <label>bowler:</label>
+                    <select ng-model="bowlerId"
+                        ng-options="p.id as p.name for p in (Innings === Team_a ? Team_b_lineups : Team_a_lineups)">
+                        <option value="">select bowler</option>
+                    </select>
+                </div>
+                <input type="button" class="glow-button" value="Set Players"
+                    ng-click="selectPlayersSolo(strikerId, bowlerId)">
+            </div>
+            <hr style="border: none; background-color: black; height: 1px;width: 100%;">
+            <div class="buttons-row flex-row">
+                <div style="text-align:center;">
+                    Runs
+                    <input type="button" value="0" ng-click="dot()">
+                    <input type="button" value="1" ng-click="single()">
+                    <input type="button" value="2" ng-click="double()">
+                    <input type="button" value="3" ng-click="triple()">
+                    <input type="button" value="4" ng-click="four()">
+                    <input type="button" value="5" ng-click="five()">
+                    <input type="button" value="6" ng-click="six()">
+                    
+                   <!-- <input type="button" value="1d" ng-click="one_D()">
+                    <input type="button" value="2d" ng-click="two_D()">
+                    <input type="button" value="3d" ng-click="three_D()"> -->
+                </div>
+                <hr style="border: none; background-color: black; height: 1px;width: 100%;">
+                <div style="text-align:center;">
+                    Boundries
+                    <input type="button" value="4" ng-click="B_four()">
+                    <input type="button" value="6" ng-click="B_six()">
+                    <input type="button" value="Nb+4" ng-click="Nb4plus()">
+                    <input type="button" value="Nb+6" ng-click="Nb6plus()">
+                </div>
+                <hr style="border: none; background-color: black; height: 1px;width: 100%;">
+                <div style="text-align:center;">
+                    Extras
+                    <input type="number" name="extra" ng-model="extra" min="0" max="10" placeholder="0">
+                    <input type="button" value="wd" ng-click="wide()">
+                    <input type="button" value="Nb" ng-click="no_ball()">
+                    <input type="button" value="P" ng-click="penalty()">
+                </div>
+                <hr style="border: none; background-color: black; height: 1px;width: 100%;">
+            </div>
+            <div style="text-align:center;">
+                <input type="button" value="OUT" ng-click="wicket()"
+                    ng-disabled=" wkt === max_wkt || Overs == maxovers" style="background-color: red;">
+                <input type="button" value="OUT ON WD" ng-click="wicket_on_wide()"
+                    ng-disabled=" wkt === max_wkt || Overs == maxovers">
+                <input type="button" value="OUT ON NB" ng-click="wicket_on_no_ball()"
+                    ng-disabled=" wkt === max_wkt || Overs == maxovers">
+                <input type="button" value="RUNOUT" ng-click="runout_box()">
+                <br>
+                <hr style="border: none; background-color: black; height: 1px;width: 100%;">
+                <div style="text-align:center;">
+                    <input type="button" value="next innings" ng-click="next_innings()"
+                        ng-disabled="!(wkt === max_wkt || Overs == maxovers) || i > 2">
+                </div>
+            </div>
+        </div>
+
+        <!--scoreboard-->
+        <div class="flex-row">
+            <!-- Innings blocks -->
+            <div class="innings-block" ng-show="i>=0" style="margin-top:10px;">
+                <input type="button" style="width:100%;" ng-value="buttonLabel1st()">
+                <h5>{{Ist_inn}} batting</h5>
+                <table>
+                    <tr style="color: #ffffffb0;">
+                        <th>name</th>
+                        <th>R</th>
+                        <th>B</th>
+                        <th>4s</th>
+                        <th>6s</th>
+                        <th>SR</th>
+                    </tr>
+                    <tr ng-repeat-start="p in Ist_inn_batting" style="background-color: rgba(255, 255, 255, 0.05);">
+                        <td>{{p.name}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.runs}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.balls}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.fours}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.six}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.strikeRate}}</td>
+                    </tr>
+                    <tr ng-repeat-end>
+                        <td colspan="6" style="text-align: left; font-size: 18px;">
+                            <span ng-if="!p.isOut">not out</span>
+                            <span ng-if="p.isOut">{{p.dismissalInfo || 'out'}}</span>
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <h5>{{IInd_inn}} bowling</h5>
+                    <tr style="color: #ffffffb0;">
+                        <th>name</th>
+                        <th>O</th>
+                        <th>D</th>
+                        <th>R</th>
+                        <th>W</th>
+                        <th>ER</th>
+                    </tr>
+                    <tr ng-repeat="p in Ist_inn_bowling" style="background-color: rgba(255, 255, 255, 0.05);">
+                        <td>{{p.name}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.overs}}.{{p.balls}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.dots}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.runsConceded}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.wickets}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.economy}}</td>
+                    </tr>
+                </table>
+                <div>
+                    TOTAL<span style="float: right;">{{Ist_inn_score.Runs}}<span>{{(Ist_inn_score.WKT ==
+                            max_wkt) ? '' :
+                            '/'+Ist_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{Ist_inn_score.Overs}}</span>
+                </div>
+            </div>
+            <div class="innings-block" ng-show="i>=1">
+                <input type="button" style="width:100%;" ng-value="buttonLabel2nd()">
+                <table>
+                    <h5>{{IInd_inn}} batting</h5>
+                    <tr>
+                        <th>Name</th>
+                        <th>R</th>
+                        <th>B</th>
+                        <th>4s</th>
+                        <th>6s</th>
+                        <th>SR</th>
+                    </tr>
+                    <tr ng-repeat-start="p in IInd_inn_batting" style="background-color: rgba(255, 255, 255, 0.05);">
+                        <td>{{p.name}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.runs}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.balls}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.fours}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.six}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.strikeRate}}</td>
+                    </tr>
+                    <tr ng-repeat-end>
+                        <td colspan="6" style="text-align: left; font-size: 18px;">
+                            <span ng-if="!p.isOut">not out</span>
+                            <span ng-if="p.isOut">{{p.dismissalInfo || 'out'}}</span>
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <h5>{{Ist_inn}} bowling</h5>
+                    <tr>
+                        <th>Name</th>
+                        <th>O</th>
+                        <th>D</th>
+                        <th>R</th>
+                        <th>W</th>
+                        <th>ER</th>
+                    </tr>
+                    <tr ng-repeat="p in IInd_inn_bowling" style="background-color: rgba(255, 255, 255, 0.05);">
+                        <td>{{p.name}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.overs}}.{{p.balls}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.dots}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.runsConceded}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.wickets}}</td>
+                        <td style="font-family: 'bebasneueregular'; font-size: 24px;">{{p.economy}}</td>
+                    </tr>
+                </table>
+                <div>
+                    TOTAL<span style="float: right;">{{IInd_inn_score.Runs}}<span>{{(IInd_inn_score.WKT ==
+                            max_wkt) ? ''
+                            : '/'+IInd_inn_score.WKT}}</span></span><br>
+                    <hr>
+                    OVERS<span style="float: right;">{{IInd_inn_score.Overs}}</span>
+                </div>
+            </div>
+        </div>
+</body>
+
+</html>

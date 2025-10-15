@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scorecard Team Enteries</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="CricScoreLog.js"></script>
+    <style>
+        @font-face {
+            font-family: 'Norwester';
+            src: url('norwester.otf') format('opentype');
+        }
+
+        body {
+            font-size: xx-large;
+            font-family: 'Norwester', sans-serif;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            /* makes width calculations consistent */
+            overflow-x: hidden;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .header {
+            width: 100%;
+            background-color: #0c2f4e;
+            color: rgba(255, 255, 255, 0.9);
+            text-align: left;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            padding-left: 20px;
+            font-size: 24px;
+        }
+
+        input {
+            vertical-align: middle;
+            line-height: inherit;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 1em;
+            align-items: center;
+        }
+
+        .tname-lable {
+            display: inline-block;
+            width: 115px;
+        }
+
+        .game-info-lable {
+            display: inline-block;
+            width: 220px;
+        }
+
+        .lineups-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 35px;
+        }
+
+        table,
+        th {
+            margin: 0 auto;
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(190, 188, 188, 0.616);
+        }
+
+        th {
+            color: rgb(0, 0, 0);
+        }
+
+        td {
+            border-top: 0.5px solid rgba(255, 255, 255, 0.33);
+            border-bottom: 0.5px solid rgba(255, 255, 255, 0.33);
+            color: gray;
+            border-left: none;
+            border-right: none;
+        }
+
+        a {
+            color: rgb(84, 83, 83);
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            color: rgb(0, 0, 0);
+            /* input text color */
+            border: none;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.5);
+            text-align: center;
+            outline: none;
+            transition: border-color 0.3s;
+            padding: 6px;
+
+        }
+
+        input[type="button"] {
+            color: white;
+            background-color: #1f4d73;
+            /* dark blue to match your theme */
+            border: none;
+            padding: 10px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Norwester', sans-serif;
+            font-size: large;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        input[type="button"]:hover {
+            background-color: #1e5a8a;
+            /* lighter on hover */
+            transform: scale(1.05);
+            /* subtle zoom */
+        }
+
+        /* Glowing themed button */
+        .start-match-btn {
+            color: white;
+            /* text color */
+            background-color: #1e5a8a;
+            /* dark blue */
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-family: 'Norwester', sans-serif;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(30, 123, 189, 0.6);
+            /* soft glow */
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: inline-block;
+        }
+
+        /* Hover effect */
+        .start-match-btn:hover {
+            background-color: #287bbdf2;
+            /* lighter blue */
+            box-shadow: 0 0 12px rgba(40, 123, 189, 0.8);
+            /* stronger glow */
+            transform: scale(1.05);
+            /* subtle zoom */
+        }
+
+        /* Disabled state (if you want to disable before selection) */
+        .start-match-btn.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+
+
+        @media(min-width: 768px) {
+            .form-row {
+                flex-direction: row;
+                background-color: #0c2f4e;
+                border-radius: 10px;
+                padding: 20px;
+            }
+
+            .left {
+                margin-right: auto;
+            }
+
+            .right {
+                margin-left: auto;
+            }
+
+            .main-container {
+                min-height: calc(100vh - 80px);
+            }
+
+            .center {
+                margin-left: auto;
+                margin-right: auto;
+                /* You can adjust the width as needed */
+            }
+
+        }
+
+        @media(max-width: 767px) {
+            body {
+                font-size: 22px;
+            }
+
+            .header {
+                font-size: 15px;
+                padding-left: 20px;
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+
+            .main-container {
+                width: 100%;
+                margin: 5% 0;
+            }
+
+            .tname-lable {
+                width: 100px;
+            }
+
+            .game-info-lable {
+                width: 160px;
+            }
+
+            .lineups-row {
+                gap: 10px;
+            }
+
+            input[type="text"] {
+                font-size: 16px;
+                padding: 8px;
+            }
+
+            input[type="number"] {
+                font-size: 16px;
+                padding: 4px;
+            }
+
+            .left {
+                width: 100%;
+                font-size: 24px;
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+
+            }
+
+            .center {
+                width: 100%;
+                font-size: 24px;
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+
+            }
+
+            .center-in {
+                display: flex;
+                flex-direction: row;
+                font-size: 20px;
+                align-items: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body ng-app="scoreboard" ng-controller="regiCtrl">
+    <div class="header">
+        <!-- SVG Reset Button -->
+        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="50" height="50" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve" style="float: right; padding-right: 10px;" ng-click="reset()">
+<path fill="#287bbdf2" opacity="1.000000" stroke="none" 
+	d="
+M513.000000,126.000000 
+	C513.000000,213.020889 513.000000,300.041779 512.635071,387.285614 
+	C511.856201,388.181366 511.170807,388.815460 511.068481,389.532745 
+	C509.096375,403.356598 504.525208,416.387390 498.516632,428.874756 
+	C488.827728,449.010803 474.813171,465.756531 457.601410,479.958984 
+	C437.828217,496.275024 415.311279,506.472961 390.157349,511.072571 
+	C389.347839,511.220612 388.715149,512.335693 388.000000,513.000000 
+	C300.979095,513.000000 213.958206,513.000000 126.714371,512.635010 
+	C125.818947,511.856323 125.185310,511.171692 124.468246,511.068909 
+	C110.673668,509.091003 97.649452,504.571838 85.193192,498.555908 
+	C65.025757,488.815887 48.172741,474.852203 33.963863,457.537384 
+	C17.698700,437.716827 7.496189,415.208405 2.924938,390.045197 
+	C2.784546,389.272400 1.663733,388.677704 1.000004,388.000000 
+	C1.000000,300.979095 1.000000,213.958206 1.365101,126.714211 
+	C2.150493,125.653282 2.814678,124.854126 2.954573,123.971840 
+	C5.131947,110.239738 9.633572,97.250648 15.677435,84.799355 
+	C25.394314,64.781082 39.208672,48.040321 56.445702,33.988987 
+	C75.206100,18.695831 96.247932,8.418863 120.070946,3.851476 
+	C122.153000,3.452303 124.028542,1.975995 126.000000,1.000001 
+	C213.020889,1.000000 300.041779,1.000000 387.285797,1.365109 
+	C388.181824,2.143993 388.815613,2.827461 389.533478,2.931657 
+	C403.501221,4.959116 416.626984,9.626132 429.264618,15.720280 
+	C449.287262,25.375631 465.887512,39.322144 479.966370,56.429825 
+	C495.268372,75.023651 505.411041,96.022423 510.111725,119.670975 
+	C510.551727,121.884552 512.012939,123.895149 513.000000,126.000000 
+M326.499878,245.753662 
+	C339.495392,245.752304 352.491608,245.834778 365.486145,245.721451 
+	C374.874939,245.639572 381.270782,239.888779 381.384857,230.711807 
+	C381.641724,210.056091 381.529572,189.394501 381.413269,168.736160 
+	C381.375885,162.092819 378.079773,157.290421 371.816010,154.900955 
+	C365.564636,152.516190 359.993164,153.962967 355.409760,158.761444 
+	C352.922363,161.365524 350.710785,164.233093 348.374786,166.981827 
+	C347.168457,165.821136 346.993500,165.776108 346.874695,165.668884 
+	C345.638184,164.553314 344.428741,163.407272 343.178131,162.307938 
+	C311.212585,134.209549 274.056732,123.260284 232.415192,131.548676 
+	C161.227448,145.717972 117.288475,213.296173 132.018433,284.265411 
+	C150.684372,374.198303 259.940399,415.265045 333.224304,359.893951 
+	C342.598022,352.811401 343.265594,343.245911 334.898041,334.772217 
+	C328.108368,327.896423 321.242523,321.095825 314.402802,314.269531 
+	C306.146149,306.029083 300.501465,305.366425 290.485260,311.444092 
+	C260.916199,329.385956 223.297012,321.179138 203.990997,292.574921 
+	C184.974518,264.399689 191.519577,226.116028 218.858627,205.610703 
+	C244.162506,186.631836 281.886963,189.361694 302.656525,212.563065 
+	C300.285431,214.529678 297.696625,216.382477 295.458313,218.590591 
+	C289.578369,224.391190 288.081665,230.357071 290.798157,236.565063 
+	C293.792603,243.408066 299.401794,245.838242 306.506531,245.766510 
+	C312.837036,245.702591 319.168732,245.753448 326.499878,245.753662 
+z"/>
+
+<path fill="#FEFEFF" opacity="1.000000" stroke="none" 
+	d="
+M325.999878,245.753662 
+	C319.168732,245.753448 312.837036,245.702591 306.506531,245.766510 
+	C299.401794,245.838242 293.792603,243.408066 290.798157,236.565063 
+	C288.081665,230.357071 289.578369,224.391190 295.458313,218.590591 
+	C297.696625,216.382477 300.285431,214.529678 302.656525,212.563065 
+	C281.886963,189.361694 244.162506,186.631836 218.858627,205.610703 
+	C191.519577,226.116028 184.974518,264.399689 203.990997,292.574921 
+	C223.297012,321.179138 260.916199,329.385956 290.485260,311.444092 
+	C300.501465,305.366425 306.146149,306.029083 314.402802,314.269531 
+	C321.242523,321.095825 328.108368,327.896423 334.898041,334.772217 
+	C343.265594,343.245911 342.598022,352.811401 333.224304,359.893951 
+	C259.940399,415.265045 150.684372,374.198303 132.018433,284.265411 
+	C117.288475,213.296173 161.227448,145.717972 232.415192,131.548676 
+	C274.056732,123.260284 311.212585,134.209549 343.178131,162.307938 
+	C344.428741,163.407272 345.638184,164.553314 346.874695,165.668884 
+	C346.993500,165.776108 347.168457,165.821136 348.374786,166.981827 
+	C350.710785,164.233093 352.922363,161.365524 355.409760,158.761444 
+	C359.993164,153.962967 365.564636,152.516190 371.816010,154.900955 
+	C378.079773,157.290421 381.375885,162.092819 381.413269,168.736160 
+	C381.529572,189.394501 381.641724,210.056091 381.384857,230.711807 
+	C381.270782,239.888779 374.874939,245.639572 365.486145,245.721451 
+	C352.491608,245.834778 339.495392,245.752304 325.999878,245.753662 
+z"/>
+</svg>
+
+        <h2>CricScore Log</h2>
+        <p>from PLAY to TIME - every ball counts</p>
+    </div>
+
+    <div class="main-container">
+        <form name="registration" novalidate>
+            <div class="form-row">
+                <div class="left">
+                    <hr style="border: none; background-color: black; height: 3px;width: 90%;">
+                    <div style="text-align: center;">team names</div>
+                    <hr style="border: none; background-color: black; height: 3px;width: 90%;">
+
+                    <input type="text" id="team_a" ng-model="team_a" placeholder="TEAM A" name="team_a" required>
+                    <span style="color: red;" ng-show="registration.team_a.$dirty && registration.team_a.$invalid">
+                        <span ng-show="registration.team_a.$error.required" style="font-size: 10px;">team A name is
+                            required</span>
+                    </span>
+
+                    <input type="text" id="team_b" ng-model="team_b" placeholder="TEAM B" name="team_b" required>
+                    <span style="color: red;" ng-show="registration.team_b.$dirty && registration.team_b.$invalid">
+                        <span ng-show="registration.team_b.$error.required" style="font-size: 10px;">team B name is
+                            required</span>
+                    </span>
+                </div>
+                <div class="center">
+                    <hr style="border: none; background-color: black; height: 3px;width: 90%;">
+                    <div style="text-align: center;">match details</div>
+                    <hr style="border: none; background-color: black; height: 3px;width: 90%;">
+                    <br>
+                    <div class="center-in">
+                        <input type="radio" id="limited_overs" ng-model="match_type" value="limOvers">limited overs<br>
+                        <input type="radio" id="days_cricket" ng-model="match_type" value="multiDays">days cricket
+                    </div>
+                </div>
+                <div class="right" ng-show="match_type === 'limOvers'">
+                    <label class="game-info-lable" for="numPlayers">team size :</label>
+                    <input type="number" name="numPlayers" id="numPlayers" ng-model="numPlayers" min="2" max="11"
+                        placeholder="11"><br>
+
+                    <label class="game-info-lable" for="total_overs">max overs :</label>
+                    <input type="number" name="total_overs" id="total_overs" ng-model="maxovers" min="1" max="100"
+                        placeholder="20">
+                </div>
+                <div class="right" ng-show="match_type === 'multiDays'">
+                    <label class="game-info-lable" for="numPlayers">team size :</label>
+                    <input type="number" name="numPlayers" id="numPlayers" ng-model="numPlayers" min="2" max="11"
+                        placeholder="11"><br>
+                    <label class="game-info-lable" for="max_days">maximum days :</label>
+                    <input type="number" name="max_days" id="max_days" ng-model="max_days" min="1" max="5"
+                        placeholder="3"><br>
+                    <label class="game-info-lable" for="overs_per_day">overs per day :</label>
+                    <input type="number" name="overs_per_day" id="overs_per_day" ng-model="overs_per_day" min="1"
+                        max="100" placeholder="15">
+                </div>
+                <div class="center-in" style="margin: 0 20%;text-align: center;">
+                    <input type="text" style="width: 50%;" id="venue" ng-model="venue" placeholder="VENUE" name="venue">
+                    <input type="text" style="width: 50%;" id="DateANDtime" ng-model="DateANDtime"
+                        placeholder="date,time" name="DateANDtime">
+                </div>
+                <div class="center-in">
+                    <input type="radio" id="single_batting" ng-model="batting_mode" value="singleBat">solo batting<br>
+                    <input type="radio" id="duo_batting" ng-model="batting_mode" value="duoBat">duo batting<br>
+                </div>
+                <input type="button" value="SUBMIT"
+                    ng-disabled="registration.team_a.$dirty && registration.team_a.$invalid || registration.team_b.$dirty && registration.team_b.$invalid"
+                    ng-click="addLineups()">
+            </div>
+        </form>
+        <br>
+        <div ng-show="lineups">
+            <hr style="border: none; background-color: black; height: 3px;width: 90%;">
+            <div style="text-align: center;color: rgb(0, 0, 0);">add lineups</div>
+            <hr style="border: none; background-color: black; height: 3px;width: 90%;">
+        </div>
+        <div class="lineups-row" ng-show="lineups">
+            <div name="ta_lineup" style="text-align: center;" ng-show="lineups">
+                <input type="text" style="width: 50%;" placeholder="player name" ng-model="ta_newPlayer.name" required>
+                <span style="color: red;" ng-show="ta_lineup.pname.$dirty && ta_lineup.pname.$invalid">
+                    <span ng-show="ta_lineup.pname.$error.required" style="font-size: 10px;">player name required</span>
+                </span>
+                <input type="hidden" ng-model="ta_newPlayer.id"><br><br>
+                <input type="button" value="add" ng-disabled="ta_lineup.pname.$dirty && ta_lineup.pname.$invalid"
+                    ng-click="saveTa()">
+                <br><br>
+                <table>
+                    <tr>
+                        <th>{{team_a}}</th>
+                    </tr>
+                    <tr ng-repeat="p in ta_players">
+                        <td>{{p.name}}</td>
+                    </tr>
+                </table><br>
+            </div>
+            <div name="tb_lineup" style="text-align: center;" ng-show="lineups">
+                <input type="text" style="width: 50%;" placeholder="player name" ng-model="tb_newPlayer.name" required>
+                <span style="color: red;" ng-show="tb_lineup.pname.$dirty && tb_lineup.pname.$invalid">
+                    <span ng-show="tb_lineup.pname.$error.required" style="font-size: 10px;">player name required</span>
+                </span>
+                <input type="hidden" ng-model="tb_newPlayer.id"><br><br>
+                <input type="button" value="add" ng-disabled="tb_lineup.pname.$dirty && tb_lineup.pname.$invalid"
+                    ng-click="saveTb()">
+                <br><br>
+                <table>
+                    <tr>
+                        <th>{{team_b}}</th>
+                    </tr>
+                    <tr ng-repeat="p in tb_players">
+                        <td>{{p.name}}</td>
+                    </tr>
+                </table><br>
+            </div>
+        </div>
+        <div style="clear: both;text-align: center;width: 100%;" ng-show="lineups">
+            <input type="button" value="SAVE" ng-click="toss()"><br>
+        </div>
+        <div style="text-align: center;" ng-show="Toss">
+            <p ng-show="Toss">toss:
+                <input type="radio" ng-model="tosswin" value="team_a" ng-click="tossA()">{{team_a}}
+                <input type="radio" ng-model="tosswin" value="team_b" ng-click="tossB()">{{team_b}}
+                <br><br>
+                elected to:
+                <input type="radio" ng-model="Elc_To" value="Bat">bat
+                <input type="radio" ng-model="Elc_To" value="Field">field
+                <br><br>
+                <input type="button" value="SAVE" ng-click="display()">
+            </p>
+        </div>
+        <div ng-show="Isvisible" style="text-align: center;">
+            <h2>{{team_a}} vs {{team_b}}</h2>
+            <p>{{Toss_Won}} won the toss and elected to {{Elc_To}} first</p>
+            <button class="start-match-btn" type="button" ng-click="startMatch()">Start Match</button>
+        </div>
+    </div>
+</body>
+
+</html>
